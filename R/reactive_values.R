@@ -17,8 +17,17 @@ setup_reactive_values_obj <- function(input) {
 
 
         if (is_design_file) {
-            raw_df <- raw_df %>%
-              mutate_all(make.names) # Run make.names on all variables of the design matrix
+            if ("group" %in% colnames(raw_df)) {
+              raw_df <- raw_df %>% mutate(across(!group, make.names))
+            } else {
+              if ("sample" %in% colnames(raw_df)) {
+                raw_df <- raw_df %>% mutate(across(sample, make.names))
+              } else {
+                # If there are no columns called either sample or group,
+                # we need to treat all columns as potential sample columns
+                raw_df <- raw_df %>% mutate(across(everything(), make.names))
+              }
+            }
         } else {
           colnames(raw_df) <- make.names(colnames(raw_df))
         }
